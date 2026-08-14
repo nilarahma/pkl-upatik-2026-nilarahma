@@ -1,0 +1,38 @@
+1. Kenapa data customer dipisah dari data order?
+Karena kalau digabung dalam satu tabel besar, akan terjadi pemborosan dan kekacauan.
+Contoh: Jika 1 pelanggan punya 100 pesanan, maka data pelanggan (nama, alamat, telepon) akan ditulis berulang 100 kali. Ini boros. Lebih parah lagi: jika alamat pelanggan berubah, kita harus mengubah 100 baris data. Kalau ada yang terlewat, data jadi tidak konsisten.
+Solusi di Northwind: Data pelanggan disimpan di tabel `Customers`, dan pesanan di tabel `Orders`. Tabel `Orders` hanya menyimpan `CustomerID` sebagai penunjuk. Dengan begitu, data pelanggan cukup diubah **satu kali** di tabel `Customers`, dan semua pesanan otomatis menggunakan data terbaru.
+
+
+2. Apa yang rusak jika `Order Details` dihapus dan digabung ke `Orders`?
+Akan terjadi kekacauan karena satu pesanan bisa berisi banyak produk.
+Jika dipaksa digabung, kita harus membuat kolom `Product1`, `Product2`, `Product3`, ... di tabel `Orders`. Masalahnya:
+- Jumlah produk dalam pesanan tidak terbatas, tapi kolom terbatas.
+- Mencari pesanan yang membeli produk tertentu jadi sangat rumit (harus cek banyak kolom).
+- Data jadi tidak fleksibel.
+Solusi di Northwind: Pakai tabel `Order Details` sebagai tabel perantara. Satu `OrderID` bisa punya banyak baris di `Order Details`, tanpa batasan. Setiap baris mewakili satu produk dalam pesanan.
+
+
+
+3. Kenapa `Products` punya FK ke `Categories` dan `Suppliers`?
+Agar tidak mengulang data dan mudah dirawat.
+Bayangkan jika nama kategori (misal "Minuman") ditulis langsung di setiap produk. Jika ada 100 produk minuman, maka kata "Minuman" muncul 100 kali. Kalau namanya berubah menjadi "Beverages", kita harus ubah 100 baris.
+Solusi di Northwind: Cukup simpan `CategoryID` di tabel `Products`. Nama kategori cukup disimpan **satu kali** di tabel `Categories`. Jika nama berubah, cukup ubah satu baris di `Categories`, semua produk otomatis terupdate.
+
+
+
+ 4. (Bonus) Menambah fitur: satu order bisa dikirim ke banyak alamat
+Tabel yang harus diubah/ditambah: buat tabel baru `OrderShipments`.
+Di desain awal, alamat pengiriman hanya satu per pesanan (disimpan di tabel `Orders`). Untuk mendukung banyak alamat, kita buat tabel terpisah:
+
+sql
+CREATE TABLE OrderShipments (
+    ShipmentID INT AUTO_INCREMENT PRIMARY KEY,
+    OrderID INT NOT NULL,
+    ShipAddress VARCHAR(255),
+    ShipCity VARCHAR(50),
+    ShipPostalCode VARCHAR(15),
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID)
+);
+
+Alasan: Setiap alamat pengiriman menjadi satu baris di tabel `OrderShipments`. Satu `OrderID` bisa punya banyak baris di tabel ini. Tidak ada batasan jumlah alamat, dan query (misal mencari pesanan berdasarkan kota) jadi mudah.
