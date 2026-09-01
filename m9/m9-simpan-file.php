@@ -169,4 +169,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <hr>
     <div style="background: #fff3cd; padding: 15px; border-radius: 5px;">
-        <h3>⚠️ Keter
+        <h3>⚠️ Keterangan
